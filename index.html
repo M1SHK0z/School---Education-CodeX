@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaFlow · Duolingo stijl</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --duo-green: #58cc02;
+            --duo-green-dark: #46a302;
+            --duo-blue: #1cb0f6;
+            --duo-blue-dark: #1899d6;
+            --duo-red: #ff4b4b;
+            --duo-red-dark: #e03c3c;
+            --duo-orange: #ff9600;
+            --duo-gold: #ffc800;
+            --duo-gray: #e5e5e5;
+            --duo-text: #3c3c3c;
+            --duo-bg: #f7f7f7;
+            --duo-card: #ffffff;
+            --duo-border: #d0d0d0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            background-color: var(--duo-bg);
+            color: var(--duo-text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+        }
+
+        /* app container */
+        .app-wrapper {
+            max-width: 600px;
+            width: 100%;
+            background-color: var(--duo-card);
+            border-radius: 32px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 24px 20px 32px 20px;
+            border: 1px solid var(--duo-border);
+        }
+
+        /* header altijd zichtbaar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+
+        .home-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 8px;
+            transition: transform 0.1s;
+            color: var(--duo-text);
+        }
+        .home-btn:hover {
+            transform: scale(1.1);
+            color: var(--duo-blue);
+        }
+
+        .progress-segment {
+            flex: 1;
+            height: 16px;
+            background-color: var(--duo-gray);
+            border-radius: 40px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            width: 0%;
+            height: 100%;
+            background-color: var(--duo-green);
+            border-radius: 40px;
+            transition: width 0.25s ease;
+        }
+
+        .streak-icon {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #fff0d4;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #d07c00;
+        }
+
+        /* HOME PAGINA */
+        #home-screen {
+            display: block;
+        }
+
+        .welcome {
+            text-align: left;
+            margin-bottom: 28px;
+        }
+
+        .welcome h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .welcome p {
+            color: #777;
+            margin-top: 4px;
+        }
+
+        .lesson-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .lesson-card {
+            background: white;
+            border: 2px solid var(--duo-gray);
+            border-radius: 20px;
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            border-bottom-width: 5px;
+        }
+
+        .lesson-card:hover {
+            border-color: var(--duo-blue);
+            transform: translateY(-2px);
+            background: #fafaff;
+        }
+
+        .lesson-emoji {
+            font-size: 40px;
+            background: #eef3ff;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lesson-info h3 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .lesson-info .desc {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .badge-known {
+            margin-left: auto;
+            background: #f0f0f0;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #3c763d;
+        }
+
+        /* QUIZ/LEER SCHERM */
+        #lesson-screen {
+            display: none;
+        }
+
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .back-to-home {
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 0 6px;
+        }
+
+        .lesson-title {
+            font-weight: 600;
+            font-size: 20px;
+            background: var(--duo-gray);
+            padding: 5px 18px;
+            border-radius: 30px;
+        }
+
+        .question-panel {
+            background: #fefefe;
+            border-radius: 28px;
+            padding: 20px 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            border: 2px solid var(--duo-gray);
+        }
+
+        .instruction {
+            color: #888;
+            letter-spacing: 0.3px;
+            margin-bottom: 12px;
+        }
+
+        .word-bubble {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 60px;
+            display: inline-block;
+            margin: 10px auto 20px;
+            font-size: 44px;
+            font-weight: 700;
+            color: var(--duo-blue-dark);
+            border: 3px dashed #b0d9ff;
+        }
+
+        .sentence-hint {
+            background: #fff8e7;
+            border-radius: 24px;
+            padding: 16px;
+            font-style: italic;
+            font-size: 20px;
+            margin: 20px 0 16px;
+            border-left: 8px solid var(--duo-gold);
+        }
+
+        .options-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid var(--duo-gray);
+            border-bottom-width: 5px;
+            border-radius: 50px;
+            padding: 16px 18px;
+            font-size: 18px;
+            font-weight: 500;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: 0.05s linear;
+            cursor: pointer;
+            color: var(--duo-text);
+        }
+
+        .option-btn:not(:disabled):hover {
+            background: #f0f7ff;
+            border-color: var(--duo-blue);
+        }
+
+        .option-correct {
+            background: #d7ffb8 !important;
+            border-color: var(--duo-green) !important;
+            color: #2a6b00;
+        }
+
+        .option-wrong {
+            background: #ffdfe0 !important;
+            border-color: var(--duo-red) !important;
+            color: #a0002a;
+        }
+
+        .typing-area {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 15px 0;
+        }
+
+        #typing-input {
+            padding: 20px 18px;
+            font-size: 20px;
+            border: 3px solid var(--duo-gray);
+            border-radius: 60px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        #typing-input:focus {
+            border-color: var(--duo-blue);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 25px 0 10px;
+        }
+
+        .primary-btn {
+            background: var(--duo-green);
+            color: white;
+            border: none;
+            border-bottom: 5px solid var(--duo-green-dark);
+            padding: 15px 35px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.05s;
+            flex: 1 1 auto;
+        }
+
+        .primary-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+
+        .secondary-btn {
+            background: white;
+            color: var(--duo-text);
+            border: 2px solid var(--duo-gray);
+            border-bottom-width: 5px;
+            padding: 13px 25px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 60px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .secondary-btn.known-btn {
+            background: #fff2d9;
+            border-color: var(--duo-orange);
+            color: #a55a00;
+        }
+
+        .feedback-msg {
+            font-size: 20px;
+            font-weight: 600;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border-radius: 40px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+
+        #next-lesson-btn {
+            background: var(--duo-blue);
+            border-bottom-color: var(--duo-blue-dark);
+            display: none;
+        }
+
+        /* verborgen */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper" id="app">
+
+    <!-- altijd zichtbaar: progress en home knop (alleen homeknop werkt in home screen) -->
+    <div class="top-bar">
+        <button class="home-btn" id="home-icon-btn" title="Home">🏠</button>
+        <div class="progress-segment">
+            <div id="progress-fill" style="width:0%"></div>
+        </div>
+        <div class="streak-icon">🔥 <span id="streak-count">0</span></div>
+    </div>
+
+    <!-- HOME SCHERM (lessen overzicht) -->
+    <div id="home-screen">
+        <div class="welcome">
+            <h2>👋 Kies een les</h2>
+            <p>Elke dag een beetje bijleren</p>
+        </div>
+        <div class="lesson-grid" id="lesson-list">
+            <!-- wordt dynamisch gevuld -->
+        </div>
+    </div>
+
+    <!-- LES SCHERM (oefeningen) -->
+    <div id="lesson-screen">
+        <div class="lesson-header">
+            <button class="back-to-home" id="back-home-btn">‹</button>
+            <span class="lesson-title" id="current-lesson-name">Familie & relaties</span>
+            <span style="flex:1"></span>
+            <span id="known-badge" style="background:#ececec; padding:5px 12px; border-radius:40px;">✋ 0 bekend</span>
+        </div>
+
+        <div class="question-panel">
+            <div class="instruction" id="question-type">Vertaal het woord</div>
+            <div class="word-bubble" id="display-word">laden...</div>
+            <div id="sentence-area" class="sentence-hint hidden">💬 voorbeeldzin</div>
+
+            <!-- Meerkeuze opties (wordt gevuld) -->
+            <div id="options-container" class="options-area"></div>
+
+            <!-- Type modus -->
+            <div id="typing-container" class="typing-area hidden">
+                <input type="text" id="typing-input" placeholder="Typ de vertaling...">
+            </div>
+
+            <!-- Feedback bericht -->
+            <div class="feedback-msg" id="feedback-text"></div>
+
+            <!-- actie knoppen: controleren / weet ik al / verder -->
+            <div class="action-buttons">
+                <button class="secondary-btn known-btn" id="know-already-btn">✨ Weet ik al</button>
+                <button class="primary-btn" id="check-answer-btn">Controleren</button>
+                <button class="primary-btn" id="next-question-btn" style="display:none;">Volgende</button>
+            </div>
+            <button class="primary-btn" id="next-lesson-btn" style="display:none;">➡️ Volgende les</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // Uitgebreide woordenlijst met per woord: Engels, Nederlands, voorbeeldzin (optioneel)
+        const LESSONS = {
+            familie: {
+                name: '👨‍👩‍👧 Familie & relaties',
+                words: [
+                    { en: 'affection', nl: 'genegenheid', sentence: 'Zij toont veel affection voor haar kinderen.' },
+                    { en: 'spouse', nl: 'echtgenoot', sentence: 'Mijn spouse en ik zijn 10 jaar getrouwd.' },
+                    { en: 'bachelor', nl: 'vrijgezel', sentence: 'Hij is een gelukkige bachelor.' },
+                    { en: 'offspring', nl: 'nakomelingen', sentence: 'Hun offspring studeren allemaal.' },
+                    { en: 'upbringing', nl: 'opvoeding', sentence: 'Een goede upbringing is belangrijk.' },
+                    { en: 'marital', nl: 'huwelijks', sentence: 'Hun marital status is geheim.' }
+                ]
+            },
+            karakter: {
+                name: '🧠 Karakter & eigenschappen',
+                words: [
+                    { en: 'compassionate', nl: 'meelevend', sentence: 'Een compassionate verpleger.' },
+                    { en: 'stubborn', nl: 'koppig', sentence: 'Mijn kat is ontzettend stubborn.' },
+                    { en: 'humble', nl: 'nederig', sentence: 'Ondanks zijn roem bleef hij humble.' },
+                    { en: 'assertive', nl: 'zelfverzekerd', sentence: 'Wees assertive tijdens de onderhandeling.' },
+                    { en: 'diligent', nl: 'ijverig', sentence: 'Een diligent student haalt goede cijfers.' },
+                    { en: 'pragmatic', nl: 'pragmatisch', sentence: 'Een pragmatic oplossing zoeken.' }
+                ]
+            },
+            sociaal: {
+                name: '🤝 Sociaal & gedrag',
+                words: [
+                    { en: 'acquaintance', nl: 'kennis', sentence: 'Hij is een oude acquaintance van de familie.' },
+                    { en: 'row', nl: 'ruzie', sentence: 'Ze hadden een heftige row over geld.' },
+                    { en: 'reconcile', nl: 'verzoenen', sentence: 'Het paar probeerde te reconcile.' },
+                    { en: 'ignorance', nl: 'onwetendheid', sentence: 'Ignorance is niet altijd zaligmakend.' },
+                    { en: 'persevere', nl: 'doorzetten', sentence: 'Je moet persevere om je doel te bereiken.' }
+                ]
+            }
+        };
+
+        // Data voor snelle toegang
+        let currentLessonId = 'familie';
+        let currentLessonWords = []; // wordt geladen
+        let knownWords = new Set();   // woorden die "weet ik al" zijn
+        let currentIndex = 0;         // index in de leswoorden (nog te leren woorden)
+        let activeWordObject = null;
+        let answerLocked = false;      // voorkom dubbel antwoorden
+        let questionType = 'mc';        // 'mc' of 'typing'
+        let streak = 0;
+
+        // UI elementen
+        const homeScreen = document.getElementById('home-screen');
+        const lessonScreen = document.getElementById('lesson-screen');
+        const lessonListDiv = document.getElementById('lesson-list');
+        const currentLessonSpan = document.getElementById('current-lesson-name');
+        const displayWord = document.getElementById('display-word');
+        const sentenceArea = document.getElementById('sentence-area');
+        const optionsDiv = document.getElementById('options-container');
+        const typingContainer = document.getElementById('typing-container');
+        const typingInput = document.getElementById('typing-input');
+        const feedbackText = document.getElementById('feedback-text');
+        const checkBtn = document.getElementById('check-answer-btn');
+        const knowAlreadyBtn = document.getElementById('know-already-btn');
+        const nextBtn = document.getElementById('next-question-btn');
+        const nextLessonBtn = document.getElementById('next-lesson-btn');
+        const backHomeBtn = document.getElementById('back-home-btn');
+        const homeIconBtn = document.getElementById('home-icon-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const streakSpan = document.getElementById('streak-count');
+        const knownBadge = document.getElementById('known-badge');
+
+        // start: toon home en render lesse
+        function showHome() {
+            homeScreen.style.display = 'block';
+            lessonScreen.style.display = 'none';
+            renderLessonCards();
+        }
+
+        function renderLessonCards() {
+            let html = '';
+            for (let [id, les] of Object.entries(LESSONS)) {
+                let knownCount = [...knownWords].filter(w => les.words.some(word => word.en === w)).length;
+                html += `
+                    <div class="lesson-card" data-lesson-id="${id}">
+                        <div class="lesson-emoji">${les.name.split(' ')[0]}</div>
+                        <div class="lesson-info">
+                            <h3>${les.name}</h3>
+                            <div class="desc">${les.words.length - knownCount} woorden te leren</div>
+                        </div>
+                        <div class="badge-known">${knownCount} bekend</div>
+                    </div>
+                `;
+            }
+            lessonListDiv.innerHTML = html;
+            document.querySelectorAll('.lesson-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const lid = card.dataset.lessonId;
+                    startLesson(lid);
+                });
+            });
+        }
+
+        // start les met id
+        function startLesson(lessonId) {
+            currentLessonId = lessonId;
+            const les = LESSONS[lessonId];
+            currentLessonWords = les.words.filter(w => !knownWords.has(w.en)); // alleen onbekende woorden
+            if (currentLessonWords.length === 0) {
+                alert('🎉 Je kent al alle woorden van deze les! Kies een andere.');
+                return;
+            }
+            currentLessonSpan.innerText = les.name;
+            homeScreen.style.display = 'none';
+            lessonScreen.style.display = 'block';
+            currentIndex = 0;
+            answerLocked = false;
+            updateKnownBadge();
+            loadQuestionForCurrentIndex();
+        }
+
+        function updateKnownBadge() {
+            const les = LESSONS[currentLessonId];
+            const knownInThis = les.words.filter(w => knownWords.has(w.en)).length;
+            knownBadge.innerText = `✋ ${knownInThis} bekend`;
+        }
+
+        // update progress (aantal woorden gekend in deze les / totaal woorden in les)
+        function updateProgressBar() {
+            const les = LESSONS[currentLessonId];
+            const totalWords = les.words.length;
+            const knownCount = les.words.filter(w => knownWords.has(w.en)).length;
+            const percent = (knownCount / totalWords) * 100;
+            progressFill.style.width = percent + '%';
+        }
+
+        function loadQuestionForCurrentIndex() {
+            answerLocked = false;
+            checkBtn.style.display = 'inline-block';
+            nextBtn.style.display = 'none';
+            nextLessonBtn.style.display = 'none';
+            feedbackText.innerText = '';
+
+            if (currentIndex >= currentLessonWords.length) {
+                // les klaar, misschien naar volgend?
+                feedbackText.innerText = '✨ Les voltooid! Kies een nieuwe les.';
+                displayWord.innerText = '🎉';
+                optionsDiv.innerHTML = '';
+                typingContainer.classList.add('hidden');
+                sentenceArea.classList.add('hidden');
+                checkBtn.style.display = 'none';
+                knowAlreadyBtn.style.display = 'none';
+                nextLessonBtn.style.display = 'inline-block';
+                return;
+            }
+
+            activeWordObject = currentLessonWords[currentIndex];
+            displayWord.innerText = activeWordObject.en;
+
+            // wissel type: om en om (leuk effect)
+            questionType = (currentIndex % 2 === 0) ? 'mc' : 'typing';
+            if (questionType === 'mc') {
+                optionsDiv.classList.remove('hidden');
+                typingContainer.classList.add('hidden');
+                generateMultipleChoice();
+            } else {
+                optionsDiv.classList.add('hidden');
+                typingContainer.classList.remove('hidden');
+                typingInput.value = '';
+                typingInput.focus();
+            }
+
+            // zin tonen
+            if (activeWordObject.sentence) {
+                sentenceArea.classList.remove('hidden');
+                sentenceArea.innerText = '💬 ' + activeWordObject.sentence;
+            } else {
+                sentenceArea.classList.add('hidden');
+            }
+
+            // reset stijl opties
+            document.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.remove('option-correct', 'option-wrong');
+                b.disabled = false;
+            });
+        }
+
+        function generateMultipleChoice() {
+            let correct = activeWordObject.nl;
+            let otherOpts = [];
+            const allNl = LESSONS[currentLessonId].words.map(w => w.nl).filter(nl => nl !== correct);
+            // schud en pak 2 unieke
+            while (otherOpts.length < 2 && allNl.length > 0) {
+                let rand = allNl[Math.floor(Math.random() * allNl.length)];
+                if (!otherOpts.includes(rand)) otherOpts.push(rand);
+            }
+            if (otherOpts.length < 2) otherOpts = [...otherOpts, 'onbekend', 'vreemd']; // fallback
+            let choices = [correct, ...otherOpts.slice(0,2)];
+            choices.sort(() => Math.random() - 0.5);
+            optionsDiv.innerHTML = '';
+            choices.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => handleMCAnswer(btn, opt);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function handleMCAnswer(btn, selected) {
+            if (answerLocked) return;
+            answerLocked = true;
+            const correct = activeWordObject.nl;
+            const allOptions = document.querySelectorAll('.option-btn');
+            allOptions.forEach(b => b.disabled = true);
+            if (selected === correct) {
+                btn.classList.add('option-correct');
+                feedbackText.innerText = '✅ Perfect!';
+                handleCorrectAnswer();
+            } else {
+                btn.classList.add('option-wrong');
+                // highlight de goede
+                allOptions.forEach(b => { if (b.innerText === correct) b.classList.add('option-correct'); });
+                feedbackText.innerText = `❌ Het was: ${correct}`;
+            }
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+        }
+
+        function handleTypingAnswer() {
+            if (answerLocked) return;
+            let answer = typingInput.value.trim().toLowerCase();
+            let correct = activeWordObject.nl.toLowerCase();
+            if (answer === correct) {
+                feedbackText.innerText = '✅ Goed getypt!';
+                handleCorrectAnswer();
+            } else {
+                feedbackText.innerText = `❌ Helaas. Juist: ${activeWordObject.nl}`;
+            }
+            answerLocked = true;
+            typingInput.disabled = true;
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+        }
+
+        // goed antwoord + eventueel verwijderen uit te leren lijst? Nee, pas als 'weet ik al' wordt verwijderd. Maar goed antwoord update progress niet direct voor 'known', maar wel streak.
+        function handleCorrectAnswer() {
+            streak++;
+            streakSpan.innerText = streak;
+            // goed antwoord zorgt niet voor 'known' (tenzij via weet ik al knop). We kunnen wel progress update van de balk op basis van known.
+            updateProgressBar(); 
+            // na correct schuiven we niet automatisch door; dat doet 'volgende'
+        }
+
+        // 'weet ik al' functie
+        function markCurrentAsKnown() {
+            if (!activeWordObject || answerLocked) return;
+            const enWord = activeWordObject.en;
+            knownWords.add(enWord);
+            // verwijder uit currentLessonWords (filter)
+            currentLessonWords = currentLessonWords.filter(w => w.en !== enWord);
+            updateKnownBadge();
+            updateProgressBar();
+            // ga direct naar volgende (huidige overslaan)
+            moveToNextQuestion();
+        }
+
+        function moveToNextQuestion() {
+            // als we klaar zijn met de les of nog woorden
+            if (currentLessonWords.length === 0) {
+                loadQuestionForCurrentIndex(); // toont voltooid
+            } else {
+                // currentIndex blijft 0.. als we filteren, maar we moeten de index resetten naar 0, want woordenlijst is veranderd.
+                currentIndex = 0; // omdat we weten dat de array geshifft is. Maar beter gewoon opnieuw laden met 0
+                loadQuestionForCurrentIndex();
+            }
+        }
+
+        // next vraag (handmatig na antwoord)
+        function nextQuestionHandler() {
+            if (currentLessonWords.length > 0) {
+                // als huidige woord nog niet bekend is en we hebben fout/geen 'weet ik al' dan blijft hij in de lijst.
+                // Maar we willen dat het woord blijft bestaan totdat het 'weet ik al' is.
+                // Dus huidige woord NIET verwijderen. Alleen bij 'weet ik al' verwijderen.
+                // Dus rotatie: we zetten huidige woord achteraan (behalve als het bekend is)
+                // Omdat we geen voortgang forceren tenzij 'weet ik al' is gebruikt.
+                if (activeWordObject && !knownWords.has(activeWordObject.en)) {
+                    // zet huidige woord achteraan (behalve als het net bekend werd via de knop)
+                    // check of het nog in currentLessonWords zit (na markeren is die weg)
+                    if (currentLessonWords.includes(activeWordObject)) {
+                        // shuffle: verwijder van huidige positie en push
+                        const idx = currentLessonWords.indexOf(activeWordObject);
+                        if (idx > -1) {
+                            currentLessonWords.splice(idx, 1);
+                            currentLessonWords.push(activeWordObject);
+                        }
+                    }
+                }
+                // laad eerste (gesorteerd, onbekende voorop)
+                loadQuestionForCurrentIndex();
+            } else {
+                loadQuestionForCurrentIndex();
+            }
+        }
+
+        // event listeners
+        checkBtn.addEventListener('click', () => {
+            if (questionType === 'typing') {
+                handleTypingAnswer();
+            } else {
+                // bij multiple choice moet al geklikt zijn, maar voor de zekerheid
+                if (!answerLocked) feedbackText.innerText = 'Kies eerst een antwoord.';
+            }
+        });
+
+        knowAlreadyBtn.addEventListener('click', () => {
+            if (!activeWordObject || answerLocked) return;
+            markCurrentAsKnown();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            nextQuestionHandler();
+        });
+
+        backHomeBtn.addEventListener('click', () => {
+            showHome();
+        });
+
+        homeIconBtn.addEventListener('click', () => {
+            showHome();
+        });
+
+        nextLessonBtn.addEventListener('click', () => {
+            showHome();
+        });
+
+        // init
+        showHome();
+        renderLessonCards();
+        streakSpan.innerText = streak;
+        updateProgressBar();
+
+        // kleine styling aanpassingen
+    })();
+</script>
+</body>
+</html>
