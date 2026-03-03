@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocab Master - Duolingo Style</title>
+<style>
+:root {
+    --primary: #58cc02;
+    --primary-dark: #46a302;
+    --secondary: #e5e5e5;
+    --bg: #fefefe;
+    --text: #333;
+    --error: #ff4b4b;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 600px;
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+}
+
+h1, h2 {
+    color: var(--primary-dark);
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 16px;
+    margin: 5px;
+    transition: 0.2s;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.lesson-btn {
+    background-color: var(--primary);
+    color: white;
+}
+
+.option-btn {
+    background-color: white;
+    border: 2px solid var(--secondary);
+    width: 100%;
+}
+
+.option-btn.correct {
+    background-color: #d7ffb8;
+    border-color: var(--primary);
+    color: var(--primary-dark);
+}
+
+.option-btn.wrong {
+    background-color: #ffdfe0;
+    border-color: var(--error);
+    color: var(--error);
+}
+
+#next-btn {
+    background-color: var(--primary);
+    color: white;
+    display: none;
+    margin-top: 20px;
+}
+
+.progress-bar {
+    height: 20px;
+    width: 100%;
+    background-color: var(--secondary);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+#progress {
+    height: 100%;
+    width: 0%;
+    background-color: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.feedback {
+    margin-top: 15px;
+    font-weight: bold;
+    min-height: 24px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    width: 80%;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 2px solid var(--secondary);
+}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+
+<!-- Home Page -->
+<div id="home-page">
+    <h1>Vocab Master</h1>
+    <p>Kies een les om te beginnen met leren:</p>
+    <div id="lesson-buttons"></div>
+</div>
+
+<!-- Lesson Page -->
+<div id="lesson-page" style="display:none;">
+    <h2 id="lesson-title"></h2>
+    <div class="progress-bar"><div id="progress"></div></div>
+    <div id="question-box">
+        <p id="question-text"></p>
+        <div class="word-to-translate" id="target-word"></div>
+    </div>
+    <div class="options" id="options-container"></div>
+    <div class="feedback" id="feedback"></div>
+    <input type="text" id="answer-input" placeholder="Typ hier je antwoord" style="display:none;">
+    <div>
+        <button id="know-btn" style="background:#ffd700;">Weet ik al</button>
+        <button id="next-btn">VOLGENDE</button>
+        <button id="home-btn" style="background:#ccc;">Home</button>
+    </div>
+</div>
+
+</div>
+
+<script>
+// LESSON DATA
+const lessons = {
+    'Basiswoorden': [
+        {en: "affection", nl: "genegenheid"},
+        {en: "spouse", nl: "echtgenoot"},
+        {en: "bachelor", nl: "vrijgezel"},
+        {en: "tenant", nl: "huurder"},
+        {en: "cherish", nl: "koesteren"}
+    ],
+    'Gevoelens': [
+        {en: "compassionate", nl: "meelevend"},
+        {en: "humility", nl: "nederigheid"},
+        {en: "assertive", nl: "zelfverzekerd"},
+        {en: "stubborn", nl: "koppig"},
+        {en: "sincere", nl: "oprecht"}
+    ]
+};
+
+// STATE
+let currentLesson = [];
+let currentWord = {};
+let score = 0;
+let totalToWin = 5;
+let knownWords = new Set();
+
+// DOM ELEMENTS
+const homePage = document.getElementById('home-page');
+const lessonPage = document.getElementById('lesson-page');
+const lessonButtonsDiv = document.getElementById('lesson-buttons');
+const lessonTitle = document.getElementById('lesson-title');
+const questionText = document.getElementById('question-text');
+const targetWord = document.getElementById('target-word');
+const optionsContainer = document.getElementById('options-container');
+const feedback = document.getElementById('feedback');
+const progressBar = document.getElementById('progress');
+const nextBtn = document.getElementById('next-btn');
+const knowBtn = document.getElementById('know-btn');
+const homeBtn = document.getElementById('home-btn');
+const answerInput = document.getElementById('answer-input');
+
+// SHOW HOME LESSON BUTTONS
+for(const lesson in lessons){
+    const btn = document.createElement('button');
+    btn.className = 'lesson-btn';
+    btn.innerText = lesson;
+    btn.onclick = () => startLesson(lesson);
+    lessonButtonsDiv.appendChild(btn);
+}
+
+function startLesson(name){
+    currentLesson = lessons[name];
+    currentLesson = currentLesson.filter(w => !knownWords.has(w.en));
+    currentWord = {};
+    score = 0;
+    totalToWin = currentLesson.length;
+    homePage.style.display = 'none';
+    lessonPage.style.display = 'block';
+    lessonTitle.innerText = name;
+    nextQuestion();
+}
+
+function nextQuestion(){
+    nextBtn.style.display = 'none';
+    feedback.innerText = '';
+    answerInput.style.display = 'none';
+    optionsContainer.innerHTML = '';
+    
+    if(currentLesson.length === 0){
+        feedback.innerText = "Gefeliciteerd! Je hebt alle woorden geleerd!";
+        return;
+    }
+    
+    // Kies willekeurig woord
+    currentWord = currentLesson[Math.floor(Math.random() * currentLesson.length)];
+    
+    // Afwisselen oefeningstype: 0=multiple choice, 1=typen
+    const exerciseType = Math.floor(Math.random()*2);
+    
+    if(exerciseType === 0){
+        questionText.innerText = "Vertaal dit woord:";
+        targetWord.innerText = currentWord.en;
+        // Maak opties
+        let options = [currentWord.nl];
+        while(options.length < 3){
+            let rand = currentLesson[Math.floor(Math.random()*currentLesson.length)].nl;
+            if(!options.includes(rand)) options.push(rand);
+        }
+        options.sort(()=> Math.random()-0.5);
+        options.forEach(opt=>{
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = ()=>checkAnswerBtn(btn,opt);
+            optionsContainer.appendChild(btn);
+        });
+    } else {
+        questionText.innerText = "Typ de Nederlandse vertaling van dit woord:";
+        targetWord.innerText = currentWord.en;
+        answerInput.value = '';
+        answerInput.style.display = 'inline-block';
+        answerInput.focus();
+        answerInput.onkeydown = (e)=>{
+            if(e.key==='Enter') checkAnswerInput();
+        }
+    }
+    updateProgress();
+}
+
+function checkAnswerBtn(btn, choice){
+    const allBtns = document.querySelectorAll('.option-btn');
+    allBtns.forEach(b=>b.disabled=true);
+    if(choice===currentWord.nl){
+        btn.classList.add('correct');
+        feedback.innerText = "Heel goed!";
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        feedback.innerText = `Helaas! Het juiste antwoord is: ${currentWord.nl}`;
+    }
+    nextBtn.style.display='inline-block';
+}
+
+function checkAnswerInput(){
+    const answer = answerInput.value.trim().toLowerCase();
+    const correct = currentWord.nl.toLowerCase();
+    if(answer===correct){
+        feedback.innerText = "Heel goed!";
+        score++;
+    } else {
+        feedback.innerText = `Helaas! Het juiste antwoord is: ${currentWord.nl}`;
+    }
+    answerInput.disabled=true;
+    nextBtn.style.display='inline-block';
+}
+
+function updateProgress(){
+    const percent = (score / totalToWin) * 100;
+    progressBar.style.width = Math.min(percent,100)+'%';
+}
+
+// KNOW BUTTON
+knowBtn.onclick = ()=>{
+    knownWords.add(currentWord.en);
+    // verwijder uit lesson
+    currentLesson = currentLesson.filter(w=>w.en!==currentWord.en);
+    nextQuestion();
+}
+
+// NEXT BUTTON
+nextBtn.onclick = ()=>{
+    nextQuestion();
+}
+
+// HOME BUTTON
+homeBtn.onclick = ()=>{
+    lessonPage.style.display='none';
+    homePage.style.display='block';
+}
+</script>
+</body>
+</html>
