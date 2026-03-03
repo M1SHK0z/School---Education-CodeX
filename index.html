@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaFlow · meester in stijl</title>
+    <style>
+        /* ===== donker grijze basis, moderne reset ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #1e1e1e;        /* diep donkergrijs */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            margin: 0;
+            /* subtiele dynamische muis: glowy volg effect */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="28" viewBox="0 0 24 28"><circle cx="12" cy="12" r="10" fill="none" stroke="%2358cc02" stroke-width="2" /><path d="M12 2 L12 8 M12 20 L12 26 M2 12 L8 12 M20 12 L26 12" stroke="%2358cc02" stroke-width="2" /></svg>') 12 12, auto;
+        }
+
+        /* glaslook container met lichte transparantie */
+        .app-wrapper {
+            max-width: 680px;
+            width: 100%;
+            background: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 42px;
+            padding: 28px 24px 36px;
+            box-shadow: 0 25px 45px -8px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03) inset;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: box-shadow 0.2s;
+        }
+
+        .app-wrapper:hover {
+            box-shadow: 0 30px 55px -8px #58cc0215, 0 0 0 1px #58cc0220 inset;
+        }
+
+        /* ===== PAGINA'S ===== */
+        .page {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* ===== HOME (leskaarten) ===== */
+        .home-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .home-header h1 {
+            color: #eaeaea;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 5px #58cc0210;
+        }
+
+        .streak-badge {
+            background: #2d2d2d;
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: #fadb5f;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 1px solid #444;
+            box-shadow: 0 4px 0 #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .streak-badge::before {
+            content: "🔥";
+            font-size: 1.2rem;
+        }
+
+        .lesson-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .lesson-card {
+            background: #262626;
+            border-radius: 30px;
+            padding: 22px 26px;
+            border: 1px solid #3a3a3a;
+            border-bottom: 4px solid #3a3a3a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), border-color 0.2s, background 0.2s;
+            box-shadow: 0 8px 0 #181818;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-3px);
+            border-bottom-color: #58cc02;
+            background: #2d2d2d;
+            border-color: #58cc0250;
+        }
+
+        .lesson-info h2 {
+            color: #f0f0f0;
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .lesson-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lock-badge {
+            background: #3a3a3a;
+            border-radius: 40px;
+            padding: 6px 14px;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        /* ===== LES PAGINA ===== */
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .back-home {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #b0b0b0;
+            transition: 0.2s;
+            line-height: 1;
+            padding: 0 6px;
+        }
+
+        .back-home:hover {
+            color: #58cc02;
+            transform: scale(1.1);
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            height: 16px;
+            background: #2d2d2d;
+            border-radius: 30px;
+            border: 1px solid #3e3e3e;
+            overflow: hidden;
+            box-shadow: inset 0 2px 3px #111;
+        }
+
+        #progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #58cc02, #7bec00);
+            border-radius: 30px;
+            transition: width 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+            box-shadow: 0 0 12px #58cc02aa;
+        }
+
+        .score-zone {
+            color: #ccc;
+            background: #2a2a2a;
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: 1px solid #444;
+            font-weight: 600;
+        }
+
+        /* vraagvak */
+        .question-panel {
+            background: #222;
+            border-radius: 40px;
+            padding: 30px 20px;
+            margin: 20px 0 28px;
+            border: 1px solid #3d3d3d;
+            box-shadow: 0 12px 0 #151515;
+        }
+
+        .hint-label {
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+        }
+
+        .target-word {
+            font-size: 3.2rem;
+            font-weight: 700;
+            color: #d6d6d6;
+            text-shadow: 0 3px 0 #333;
+            margin: 8px 0 5px;
+        }
+
+        .sentence-context {
+            color: #58cc02;
+            font-style: italic;
+            background: #1d2a1a;
+            padding: 10px 18px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 6px;
+            border: 1px solid #58cc0230;
+        }
+
+        /* antwoord knoppen */
+        .options-area {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 30px 0 20px;
+        }
+
+        .option-btn {
+            background: #2c2c2c;
+            border: 2px solid #404040;
+            border-bottom: 5px solid #353535;
+            padding: 20px 18px;
+            font-size: 1.25rem;
+            border-radius: 60px;
+            color: #ececec;
+            font-weight: 500;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 #1d1d1d;
+            width: 100%;
+        }
+
+        .option-btn::before {
+            content: "○";
+            font-size: 1.7rem;
+            color: #777;
+            transition: 0.15s;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: #58cc02;
+            background: #353535;
+            transform: translateY(-2px);
+            border-bottom-width: 5px;
+        }
+
+        .option-btn.correct-tween {
+            background: #1f3a1f;
+            border-color: #58cc02;
+            border-bottom-color: #3d8b00;
+            color: #ccffaa;
+        }
+        .option-btn.correct-tween::before {
+            content: "✓";
+            color: #9bff63;
+        }
+
+        .option-btn.wrong-tween {
+            background: #441f1f;
+            border-color: #ff5e5e;
+            border-bottom-color: #b33f3f;
+            color: #ffbaba;
+        }
+        .option-btn.wrong-tween::before {
+            content: "✕";
+            color: #ff8888;
+        }
+
+        .option-btn:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+            border-bottom-width: 3px;
+            transform: translateY(2px);
+        }
+
+        /* typ oefening */
+        .typing-section {
+            margin: 30px 0;
+        }
+
+        .typing-input {
+            width: 100%;
+            background: #232323;
+            border: 2px solid #3b3b3b;
+            border-bottom: 5px solid #3b3b3b;
+            padding: 20px 25px;
+            font-size: 1.3rem;
+            border-radius: 80px;
+            color: #f0f0f0;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .typing-input:focus {
+            border-color: #58cc02;
+            border-bottom-color: #3d9200;
+            background: #1b1b1b;
+        }
+
+        .check-typing-btn {
+            margin-top: 16px;
+            background: #3a3a3a;
+            color: white;
+            border: none;
+            border-bottom: 5px solid #2a2a2a;
+            padding: 18px;
+            font-size: 1.2rem;
+            border-radius: 60px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .check-typing-btn:hover {
+            background: #4a4a4a;
+            border-bottom-color: #58cc02;
+        }
+
+        .feedback-msg {
+            margin: 20px 0 5px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            text-align: center;
+            height: 32px;
+            color: #ccc;
+        }
+
+        .action-btn {
+            background: #58cc02;
+            border: none;
+            border-bottom: 5px solid #3e9100;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 60px;
+            color: #0e3900;
+            cursor: pointer;
+            transition: 0.15s;
+            width: 100%;
+            box-shadow: 0 6px 0 #1f4f00;
+        }
+
+        .action-btn:hover {
+            background: #6ce303;
+            transform: translateY(-2px);
+            border-bottom-width: 6px;
+        }
+
+        .know-already-btn {
+            background: #333;
+            border: 2px solid #555;
+            border-bottom: 5px solid #444;
+            color: #ccc;
+            margin-top: 12px;
+        }
+
+        .know-already-btn:hover {
+            background: #3f3f3f;
+            border-color: #58cc02;
+            color: white;
+        }
+
+        /* footer voor extra ruimte */
+        .footer-small {
+            margin-top: 24px;
+            color: #5a5a5a;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper" id="appWrapper">
+
+    <!-- HOME PAGE (lessen overzicht) -->
+    <div id="homePage" class="page active">
+        <div class="home-header">
+            <h1>LinguaFlow</h1>
+            <div class="streak-badge">5</div>
+        </div>
+
+        <div class="lesson-grid" id="lessonList">
+            <!-- wordt dynamisch gevuld met lessen -->
+        </div>
+        <div class="footer-small">⬇️ kies een les om te starten</div>
+    </div>
+
+    <!-- LES PAGINA (leren maar) -->
+    <div id="lessonPage" class="page">
+        <div class="lesson-header">
+            <button class="back-home" id="backToHomeBtn" aria-label="Terug naar home">⌂</button>
+            <div class="progress-bar-container">
+                <div id="progress-fill"></div>
+            </div>
+            <div class="score-zone" id="scoreDisplay">0/8</div>
+        </div>
+
+        <div class="question-panel" id="questionPanel">
+            <div class="hint-label" id="questionHint">Vertaal / vul aan</div>
+            <div class="target-word" id="targetWord">woord</div>
+            <div id="sentenceBox" class="sentence-context"></div>
+        </div>
+
+        <!-- dynamische oefening container (multiple choice / typing) -->
+        <div id="exerciseArea"></div>
+
+        <div id="feedbackMessage" class="feedback-msg"></div>
+
+        <!-- extra knoppen: weet ik al, volgende (next) -->
+        <button class="action-btn" id="nextButton" style="display: none;" disabled>VOLGENDE</button>
+        <button class="know-already-btn action-btn" id="knowAlreadyBtn" style="margin-top: 16px;">➕ Weet ik al · overslaan</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ========== LESDATA met verschillende oefentypes ==========
+        const lessons = [
+            { 
+                id: 1, name: 'Relaties & gevoel', icon: '💞', 
+                words: [
+                    { en: 'affection', nl: 'genegenheid', sentence: 'Zij toonde veel {affection} voor haar kinderen.' },
+                    { en: 'spouse', nl: 'echtgenoot', sentence: 'Mijn {spouse} en ik zijn 10 jaar getrouwd.' },
+                    { en: 'to alienate', nl: 'vervreemden', sentence: 'Onvrede kan mensen {to alienate}.' },
+                    { en: 'tempestuous', nl: 'stormachtig', sentence: 'Hun relatie was {tempestuous} maar passievol.' },
+                    { en: 'cherish', nl: 'koesteren', sentence: 'Ik {cherish} elke herinnering.' }
+                ]
+            },
+            {
+                id: 2, name: 'Persoonlijkheid', icon: '🧠',
+                words: [
+                    { en: 'assertive', nl: 'zelfverzekerd', sentence: 'Een leider moet {assertive} zijn.' },
+                    { en: 'conscientious', nl: 'plichtsgetrouw', sentence: 'Zij is heel {conscientious} op werk.' },
+                    { en: 'humble', nl: 'nederig', sentence: 'Ondanks roem bleef hij {humble}.' },
+                    { en: 'diligent', nl: 'ijverig', sentence: 'Met {diligent} werk bereik je veel.' },
+                    { en: 'stubborn', nl: 'koppig', sentence: 'Mijn ezel is ontzettend {stubborn}.' }
+                ]
+            },
+            {
+                id: 3, name: 'Dagelijks leven', icon: '☕',
+                words: [
+                    { en: 'tenant', nl: 'huurder', sentence: 'De {tenant} betaalt elke maand huur.' },
+                    { en: 'upbringing', nl: 'opvoeding', sentence: 'Een warme {upbringing} is belangrijk.' },
+                    { en: 'acquaintance', nl: 'kennis', sentence: 'Hij is geen vriend, slechts een {acquaintance}.' },
+                    { en: 'row', nl: 'ruzie', sentence: 'Ze hadden een heftige {row} over geld.' },
+                    { en: 'wit', nl: 'gevatheid', sentence: 'Met zijn {wit} maakt hij iedereen aan het lachen.' }
+                ]
+            }
+        ];
+
+        // Master woordenlijst (voor "weet ik al" – we slaan per les bijgehouden woorden over)
+        let knownWords = [];        // array van woorden (en) die de gebruiker al kent (overgeslagen)
+        let currentLesson = null;
+        let currentLessonWords = []; // gefilterd (zonder bekende woorden)
+        let currentIndex = 0;
+        let currentExerciseType = 'choice'; // 'choice' of 'type'
+        let currentQuestionWord = null;
+        let answered = false;
+        let correctCount = 0;
+        let totalExercises = 0;     // voor progress balk
+
+        // DOM elementen
+        const homePage = document.getElementById('homePage');
+        const lessonPage = document.getElementById('lessonPage');
+        const lessonListDiv = document.getElementById('lessonList');
+        const backBtn = document.getElementById('backToHomeBtn');
+        const targetWordSpan = document.getElementById('targetWord');
+        const sentenceBox = document.getElementById('sentenceBox');
+        const exerciseArea = document.getElementById('exerciseArea');
+        const feedbackMsg = document.getElementById('feedbackMessage');
+        const nextBtn = document.getElementById('nextButton');
+        const knowAlreadyBtn = document.getElementById('knowAlreadyBtn');
+        const progressFill = document.getElementById('progress-fill');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const questionHint = document.getElementById('questionHint');
+
+        // toon home en lessen
+        function renderHome() {
+            lessonListDiv.innerHTML = '';
+            lessons.forEach(lesson => {
+                // tel hoeveel woorden beschikbaar (na aftrek knownWords)
+                const available = lesson.words.filter(w => !knownWords.includes(w.en)).length;
+                const card = document.createElement('div');
+                card.className = 'lesson-card';
+                card.setAttribute('data-id', lesson.id);
+                card.innerHTML = `
+                    <div class="lesson-info">
+                        <h2>${lesson.icon} ${lesson.name}</h2>
+                        <div class="lesson-meta">
+                            <span>📘 ${available} woorden</span>
+                        </div>
+                    </div>
+                    <div class="lock-badge">start</div>
+                `;
+                card.addEventListener('click', () => startLesson(lesson));
+                lessonListDiv.appendChild(card);
+            });
+        }
+
+        // start les
+        function startLesson(lesson) {
+            currentLesson = lesson;
+            // filter woorden die NIET in knownWords zitten
+            currentLessonWords = lesson.words.filter(w => !knownWords.includes(w.en));
+            if (currentLessonWords.length === 0) {
+                alert('Je kent alle woorden van deze les al! Kies een andere les.');
+                return;
+            }
+            currentIndex = 0;
+            correctCount = 0;
+            answered = false;
+            updateProgressBar();
+
+            homePage.classList.remove('active');
+            lessonPage.classList.add('active');
+
+            // volgende vraag laden
+            loadNextQuestion();
+        }
+
+        // kies willekeurig type (afwisseling)
+        function pickRandomExerciseType() {
+            return Math.random() > 0.5 ? 'choice' : 'type';
+        }
+
+        // laad vraag voor currentIndex (eigenlijk pakken we willekeurig, maar houden lijst bij)
+        function loadNextQuestion() {
+            if (currentLessonWords.length === 0) {
+                // dit zou niet moeten gebeuren (checked bij start)
+                backToHome();
+                return;
+            }
+
+            // Kies willekeurig woord uit de les (geen vaste index; duolingo-stijl herhaling)
+            const randomIndex = Math.floor(Math.random() * currentLessonWords.length);
+            currentQuestionWord = { ...currentLessonWords[randomIndex] }; // kopie
+
+            // bepaal oefentype (afwisselend)
+            currentExerciseType = pickRandomExerciseType();
+
+            // UI update
+            targetWordSpan.innerText = currentQuestionWord.en;
+            if (currentExerciseType === 'choice') {
+                questionHint.innerText = '✳️ Kies de juiste vertaling';
+                sentenceBox.innerText = `➡️ ${currentQuestionWord.sentence.replace('{'+currentQuestionWord.en+'}', '___')}`;
+                renderMultipleChoice();
+            } else {
+                questionHint.innerText = '⌨️ Typ de vertaling (NL)';
+                sentenceBox.innerText = `➡️ ${currentQuestionWord.sentence.replace('{'+currentQuestionWord.en+'}', '______')}`;
+                renderTypingExercise();
+            }
+
+            // reset status
+            answered = false;
+            feedbackMsg.innerText = '';
+            nextBtn.style.display = 'none';
+            nextBtn.disabled = true;
+            knowAlreadyBtn.disabled = false; 
+        }
+
+        function renderMultipleChoice() {
+            const correctNl = currentQuestionWord.nl;
+            // pak 2 andere random woorden uit dezelfde les (of uit andere als nodig)
+            let otherWords = currentLessonWords.filter(w => w.nl !== correctNl).map(w => w.nl);
+            // als er minder dan 2 zijn, vul met 'onbekend' of uit andere les
+            while (otherWords.length < 2) {
+                otherWords.push('onbekend');
+            }
+            // neem 2 unieke
+            let options = [correctNl];
+            const shuffled = otherWords.sort(() => 0.5 - Math.random());
+            options.push(shuffled[0]);
+            if (shuffled[1] && !options.includes(shuffled[1])) options.push(shuffled[1]);
+            else options.push('vreemd');
+            // mix
+            options = options.sort(() => Math.random() - 0.5);
+
+            let html = '<div class="options-area">';
+            options.forEach(opt => {
+                html += `<button class="option-btn" data-value="${opt}">${opt}</button>`;
+            });
+            html += '</div>';
+            exerciseArea.innerHTML = html;
+
+            // voeg event listeners toe
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (answered) return;
+                    const selected = btn.dataset.value;
+                    handleChoiceAnswer(selected, btn);
+                });
+            });
+        }
+
+        function handleChoiceAnswer(selected, btn) {
+            answered = true;
+            const isCorrect = (selected === currentQuestionWord.nl);
+            applyAnswerFeedback(isCorrect, btn);
+        }
+
+        function renderTypingExercise() {
+            exerciseArea.innerHTML = `
+                <div class="typing-section">
+                    <input type="text" id="typingInput" class="typing-input" placeholder="typ Nederlands..." autofocus>
+                    <button class="check-typing-btn" id="checkTypingBtn">Controleer</button>
+                </div>
+            `;
+            const inputField = document.getElementById('typingInput');
+            const checkBtn = document.getElementById('checkTypingBtn');
+            checkBtn.addEventListener('click', () => {
+                if (answered) return;
+                const answer = inputField.value.trim().toLowerCase();
+                const correct = currentQuestionWord.nl.toLowerCase();
+                const isCorrect = (answer === correct);
+                answered = true;
+
+                // visuele tween op input
+                if (isCorrect) {
+                    inputField.style.transition = '0.2s';
+                    inputField.style.backgroundColor = '#1f3a1f';
+                    inputField.style.borderColor = '#58cc02';
+                    feedbackMsg.innerText = '✔️ perfect!';
+                } else {
+                    inputField.style.backgroundColor = '#441f1f';
+                    inputField.style.borderColor = '#ff5e5e';
+                    feedbackMsg.innerText = `❌ fout. juist: ${currentQuestionWord.nl}`;
+                }
+                setTimeout(() => {
+                    inputField.style.backgroundColor = '#232323';
+                }, 500);
+
+                if (isCorrect) correctCount++;
+                updateProgressBar();
+                finishQuestion(isCorrect);
+            });
+        }
+
+        // gemeenschappelijke afhandeling na antwoord
+        function applyAnswerFeedback(isCorrect, targetBtn = null) {
+            if (isCorrect) {
+                if (targetBtn) {
+                    targetBtn.classList.add('correct-tween');
+                }
+                feedbackMsg.innerText = '⭐ geweldig!';
+                correctCount++;
+            } else {
+                if (targetBtn) {
+                    targetBtn.classList.add('wrong-tween');
+                }
+                feedbackMsg.innerText = `😕 juist was: ${currentQuestionWord.nl}`;
+            }
+            // disable alle knoppen
+            document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+            updateProgressBar();
+            finishQuestion(isCorrect);
+        }
+
+        function finishQuestion(isCorrect) {
+            // toon next knop
+            nextBtn.style.display = 'block';
+            nextBtn.disabled = false;
+            knowAlreadyBtn.disabled = true;  // niet nogmaals overslaan
+
+            // tween voor progress bar al gebeurd in update
+        }
+
+        // voortgang update (max per les 8 oefeningen? gebruiken we leslengte)
+        function updateProgressBar() {
+            const total = currentLessonWords.length;
+            const progress = (correctCount / total) * 100;
+            progressFill.style.width = Math.min(progress, 100) + '%';
+            scoreDisplay.innerText = `${correctCount}/${total}`;
+        }
+
+        // volgende vraag knop
+        nextBtn.addEventListener('click', () => {
+            if (!answered) return; 
+            // kijk of les klaar
+            if (correctCount >= currentLessonWords.length) {
+                feedbackMsg.innerText = '🎉 Les compleet! Morgen meer.';
+                nextBtn.style.display = 'none';
+                // na 2 sec terug naar home
+                setTimeout(backToHome, 2000);
+                return;
+            }
+            // anders nieuwe vraag
+            loadNextQuestion();
+        });
+
+        // weet ik al: voeg woord toe aan knownWords, verwijder uit huidige leswoorden
+        knowAlreadyBtn.addEventListener('click', () => {
+            if (!currentQuestionWord || answered) return; // alleen voor onbeantwoorde vragen
+            const wordEn = currentQuestionWord.en;
+            if (!knownWords.includes(wordEn)) {
+                knownWords.push(wordEn);
+            }
+            // verwijder uit currentLessonWords
+            currentLessonWords = currentLessonWords.filter(w => w.en !== wordEn);
+            if (currentLessonWords.length === 0) {
+                feedbackMsg.innerText = '👏 Je kent nu alle woorden van deze les!';
+                setTimeout(backToHome, 1500);
+                return;
+            }
+            // update progress & laad nieuwe vraag
+            correctCount = Math.min(correctCount, currentLessonWords.length); // grens
+            updateProgressBar();
+            loadNextQuestion();
+        });
+
+        // terug naar home
+        function backToHome() {
+            homePage.classList.add('active');
+            lessonPage.classList.remove('active');
+            renderHome(); // herfresh lestegels met knownWords
+        }
+
+        backBtn.addEventListener('click', backToHome);
+
+        // initialiseer
+        renderHome();
+
+        // extra dynamisch effect op wrapper (muis beweging)
+        const wrapper = document.getElementById('appWrapper');
+        wrapper.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 10;
+            const y = (e.clientY / window.innerHeight) * 10;
+            wrapper.style.background = `radial-gradient(circle at ${e.clientX - wrapper.offsetLeft}px ${e.clientY - wrapper.offsetTop}px, #2f2f2f, #1a1a1a)`;
+        });
+        wrapper.addEventListener('mouseleave', () => {
+            wrapper.style.background = '';
+        });
+
+    })();
+</script>
+</body>
+</html>
